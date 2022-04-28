@@ -94,12 +94,18 @@ void read(const char* file_name) {
             size_t total_size = entries[i].file_size;
             data_block_t* curr_block = &blocks[entries[i].start_index];
 
-            do {
+            for (;;) {
                 for (size_t j = 0; j < min(BLOCK_DATA_SIZE, total_size); j++) {
                     printf("%c", curr_block->data[j]);
                 }
                 total_size -= BLOCK_DATA_SIZE;
-            } while (curr_block->index != -1);
+
+                // move to next block
+                if (curr_block->index == -1) {  // EOF
+                    break;
+                }
+                curr_block = &blocks[curr_block->index];
+            }
         }
     }
 }
