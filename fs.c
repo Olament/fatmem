@@ -1,0 +1,104 @@
+#include "fs.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// data block definition (in bytes)
+#define BLOCK_INDEX_SIZE 4
+#define BLOCK_DATA_SIZE 124
+#define BLOCK_SIZE (BLOCK_INDEX_SIZE + BLOCK_DATA_SIZE)
+#define MAX_BLOCK_SIZE 1024
+
+// file entry
+#define MAX_FILENAME 32
+#define MAX_FILE_SIZE 256
+
+typedef struct __attribute__((__packed__)) data_block {
+    uint32_t index;
+    uint8_t data[BLOCK_DATA_SIZE];
+} data_block_t;
+
+typedef struct file_entry {
+    char name[MAX_FILENAME];
+    uint32_t start_index;
+    size_t file_size;
+} file_entry_t;
+
+typedef struct node {
+    struct node* next;
+} node_t;
+
+node_t* free_list = NULL;
+data_block_t* blocks = NULL;
+
+file_entry_t entries[MAX_FILE_SIZE];
+size_t next_entry = 0;
+
+void fs_init() {
+    // initialize data blocks
+    blocks = malloc(sizeof(data_block_t) * MAX_BLOCK_SIZE);
+
+    // adding data blocks to the free list
+    for (size_t i = 0; i < MAX_BLOCK_SIZE; i++) {
+        node_t* curr_node = (node_t*)(&blocks[i]);
+        curr_node->next = free_list;
+        free_list = curr_node;
+    }
+}
+
+size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
+
+bool write(const char* file_name, uint8_t* buf, size_t size) {
+    // adding it to the file entry
+    if (next_entry >= MAX_FILE_SIZE) {
+        return false;
+    }
+    strcpy(entries[next_entry].name, file_name);
+    entries[next_entry].file_size = size;
+    // index calculated by its relative distance to first block
+    entries[next_entry].start_index =
+        ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
+
+    // copy data from buf into data block
+    size_t total_blocks = (size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
+    for (size_t i = 0; i < total_blocks; i++) {
+        // obtain a new data block
+        if (free_list == NULL) {
+            return false;
+        }
+        data_block_t* new_block = (data_block_t*)free_list;
+        free_list = free_list->next;
+
+        // copy data over
+        size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
+        memcpy(new_block->data, buf, size_to_copy);
+
+        // set block index
+        new_block->index =
+            (i < (total_blocks - 1))
+                ? ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE
+                : -1;
+    }
+    next_entry++;
+
+    return true;
+}
+
+bool append(const char* file_name, uint8_t* buf, size_t size) { return true; }
+
+void read(const char* file_name) {
+    for (size_t i = 0; i < next_entry; i++) {
+        if (strcmp(file_name, entries[i].name) == 0) {
+            size_t total_size = entries[i].file_size;
+            data_block_t* curr_block = &blocks[entries[i].start_index];
+
+            do {
+                for (size_t j = 0; j < min(BLOCK_DATA_SIZE, total_size); j++) {
+                    printf("%c", curr_block->data[j]);
+                }
+                total_size -= BLOCK_DATA_SIZE;
+            } while (curr_block->index != -1);
+        }
+    }
+}
