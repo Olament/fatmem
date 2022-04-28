@@ -73,6 +73,7 @@ bool write(const char* file_name, uint8_t* buf, size_t size) {
         // copy data over
         size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
         memcpy(new_block->data, buf, size_to_copy);
+        buf += BLOCK_DATA_SIZE;
 
         // set block index
         new_block->index =
