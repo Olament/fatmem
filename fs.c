@@ -6,7 +6,7 @@
 
 // data block definition (in bytes)
 #define BLOCK_INDEX_SIZE 4
-#define BLOCK_DATA_SIZE 124
+#define BLOCK_DATA_SIZE 5
 #define BLOCK_SIZE (BLOCK_INDEX_SIZE + BLOCK_DATA_SIZE)
 #define MAX_BLOCK_SIZE 1024
 
@@ -74,6 +74,7 @@ bool write(const char* file_name, uint8_t* buf, size_t size) {
         size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
         memcpy(new_block->data, buf, size_to_copy);
         buf += BLOCK_DATA_SIZE;
+        size -= BLOCK_DATA_SIZE;
 
         // set block index
         new_block->index =
@@ -86,7 +87,76 @@ bool write(const char* file_name, uint8_t* buf, size_t size) {
     return true;
 }
 
-bool append(const char* file_name, uint8_t* buf, size_t size) { return true; }
+bool append(const char *file_name, uint8_t *buf, size_t size)
+{
+    for (size_t i = 0; i < next_entry; i++)
+    {
+        if (strcmp(file_name, entries[i].name) == 0)
+        {
+            size_t fsize = entries[i].file_size;
+ 
+            // loop through each block to get to last
+            data_block_t *curr_block = &blocks[entries[i].start_index];
+            while (curr_block->index != -1)
+            { // EOF
+                curr_block = &blocks[curr_block->index];
+            }
+            
+            size_t start = fsize % BLOCK_DATA_SIZE; // write index of last block
+            size_t leftover = BLOCK_DATA_SIZE - start; // leftover space of last block
+
+            
+            // If the block has enough space to fit the buf, write and return.
+            // If start is 0, there is no space left--the last block was completely filled
+            if(leftover >= size && start != 0){
+                memcpy((curr_block->data)+start, buf, size);
+                entries[i].file_size += size;
+                return true;
+            }
+            else if(leftover < size && start != 0){
+                //  Otherwise write until the very end of the block.
+                memcpy((curr_block->data)+start, buf, leftover);
+                buf += leftover;
+                entries[i].file_size += leftover;
+                size -= leftover;
+            }
+            
+            // set block index
+            curr_block->index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
+
+            // Determine how many MORE blocks we need to add to the file to copy the data over, and add them.
+            size_t total_blocks = (size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
+            for (size_t i = 0; i < total_blocks; i++)
+            {
+                // obtain a new data block
+                if (free_list == NULL)
+                {
+                    return false;
+                }
+                data_block_t *new_block = (data_block_t *)free_list;
+                free_list = free_list->next;
+
+                // copy data over
+                size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
+                memcpy(new_block->data, buf, size_to_copy);
+                buf += BLOCK_DATA_SIZE;
+                size -= BLOCK_DATA_SIZE;
+                entries[i].file_size += size_to_copy;
+              
+
+                // set block index
+                new_block->index =
+                    (i < (total_blocks - 1))
+                        ? ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE
+                        : -1;
+            }
+
+            printf("Final file size: %zu\n", entries[i].file_size);
+        }
+    }
+    
+    return true;
+}
 
 void read(const char* file_name) {
     for (size_t i = 0; i < next_entry; i++) {
