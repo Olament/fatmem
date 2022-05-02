@@ -6,7 +6,7 @@
 
 // data block definition (in bytes)
 #define BLOCK_INDEX_SIZE 4
-#define BLOCK_DATA_SIZE 5
+#define BLOCK_DATA_SIZE 8
 #define BLOCK_SIZE (BLOCK_INDEX_SIZE + BLOCK_DATA_SIZE)
 #define MAX_BLOCK_SIZE 1024
 
@@ -61,7 +61,7 @@ bool write(const char* file_name, uint8_t* buf, size_t size) {
         ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
 
     // copy data from buf into data block
-    size_t total_blocks = (size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
+    size_t total_blocks = (size + BLOCK_DATA_SIZE -1) / BLOCK_DATA_SIZE;
     for (size_t i = 0; i < total_blocks; i++) {
         // obtain a new data block
         if (free_list == NULL) {
@@ -73,8 +73,8 @@ bool write(const char* file_name, uint8_t* buf, size_t size) {
         // copy data over
         size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
         memcpy(new_block->data, buf, size_to_copy);
-        buf += BLOCK_DATA_SIZE;
-        size -= BLOCK_DATA_SIZE;
+        buf += size_to_copy;
+        size -= size_to_copy;
 
         // set block index
         new_block->index =
@@ -93,6 +93,7 @@ bool append(const char *file_name, uint8_t *buf, size_t size)
     {
         if (strcmp(file_name, entries[i].name) == 0)
         {
+
             size_t fsize = entries[i].file_size;
  
             // loop through each block to get to last
@@ -125,8 +126,9 @@ bool append(const char *file_name, uint8_t *buf, size_t size)
             curr_block->index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
 
             // Determine how many MORE blocks we need to add to the file to copy the data over, and add them.
-            size_t total_blocks = (size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
-            for (size_t i = 0; i < total_blocks; i++)
+            size_t total_blocks = (size + BLOCK_DATA_SIZE -1) / BLOCK_DATA_SIZE;
+            printf("TOTAL B: %zu\n", total_blocks);
+            for (size_t j = 0; j < total_blocks; j++)
             {
                 // obtain a new data block
                 if (free_list == NULL)
@@ -138,10 +140,12 @@ bool append(const char *file_name, uint8_t *buf, size_t size)
 
                 // copy data over
                 size_t size_to_copy = min(size, BLOCK_DATA_SIZE);
+                printf("Size to cop: %zu\n", size_to_copy);
                 memcpy(new_block->data, buf, size_to_copy);
-                buf += BLOCK_DATA_SIZE;
-                size -= BLOCK_DATA_SIZE;
+                buf += size_to_copy;
+                size -= size_to_copy;
                 entries[i].file_size += size_to_copy;
+                printf("file_Size now: %zu\n", entries[i].file_size);
               
 
                 // set block index
@@ -149,6 +153,8 @@ bool append(const char *file_name, uint8_t *buf, size_t size)
                     (i < (total_blocks - 1))
                         ? ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE
                         : -1;
+
+                printf("newb ind: %d\n", new_block->index);
             }
 
             printf("Final file size: %zu\n", entries[i].file_size);
