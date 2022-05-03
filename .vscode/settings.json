@@ -5,5 +5,7 @@
         "string_view": "c",
         "initializer_list": "c",
         "utility": "c"
-    }
+    },
+    "C_Cpp.intelliSenseEngine": "Default",
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 100 }",
 }
