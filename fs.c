@@ -168,3 +168,16 @@ void delete (const char* file_name) {
         }
     }
 }
+
+int rename(const char* oldpath, const char* newpath) {
+	int r = 1;
+
+	for(int i = 0; i < next_entry; i++) {
+		if (strcmp(oldpath, entries[i].name) == 0) {
+			strcpy(entries[i].name, newpath);
+			r = 0;
+		}
+	}
+
+	return r;
+}
