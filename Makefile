@@ -1,7 +1,7 @@
 CC := clang
 CFLAGS := -I.
-DEPS := fs.h
-OBJ := fs.o main.o
+DEPS := fs.h fd.h posix.h
+OBJ := fs.o fd.o posix.o main.o
 
 all: main
 
