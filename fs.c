@@ -180,3 +180,20 @@ void read(const char* file_name) {
         }
     }
 }
+
+void delete(const char* file_name) {
+    for(size_t i = 0; i < next_entry; i++) {
+        if (strcmp(file_name, entries[i].name) == 0) {
+            // Put data block on freelist for future use
+            blocks[entries[i].start_index].index = 0;
+            node_t* curr_node = (node_t*)(&blocks[entries[i].start_index]); 
+            curr_node->next = free_list;
+            free_list = curr_node;
+
+            // Remove entry
+            strcpy(entries[i].name, "");
+            memset(&entries[i].start_index, 0, sizeof(uint32_t));
+            memset(&entries[i].file_size, 0, sizeof(size_t));
+        }
+    }
+}
