@@ -41,8 +41,27 @@ int open(const char* file_name) {
         }
     }
 
-    // file not found
-    return -1;
+    // file not found, create a new file instead
+
+    // sanity check
+    if (next_entry >= MAX_FILE_SIZE) {
+        return -1;
+    }
+    if (free_list != NULL) {
+        return -1;
+    }
+    // setting up an empty file entry
+    strcpy(entries[next_entry].name, file_name);
+    entries[next_entry].file_size = 0;
+    entries[next_entry].start_index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
+    data_block_t* new_block = free_list;
+    new_block->index = -1;
+    free_list = free_list->next;
+
+    int fd = create_fd(&entries[next_entry]);
+    next_entry += 1;
+
+    return fd;
 }
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
