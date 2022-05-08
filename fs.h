@@ -24,7 +24,7 @@ void fs_init();
 
 int open(const char* file_name);
 
-bool write(const char* file_name, uint8_t* buf, size_t size);
+bool write(int fd, uint8_t* buf, size_t size);
 
 bool append(int fd, uint8_t* buf, size_t size);
 
@@ -32,4 +32,4 @@ void read(int fd);
 
 void delete (int fd);
 
-int rename(const char* oldpath, const char* newpath);
+bool rename(const char* oldpath, const char* newpath);
