@@ -26,10 +26,10 @@ int open(const char* file_name);
 
 bool write(const char* file_name, uint8_t* buf, size_t size);
 
-bool append(const char* file_name, uint8_t* buf, size_t size);
+bool append(int fd, uint8_t* buf, size_t size);
 
-void read(const char* file_name);
+void read(int fd);
 
-void delete (const char* file_name);
+void delete (int fd);
 
 int rename(const char* oldpath, const char* newpath);
