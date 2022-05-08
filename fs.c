@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fd.h"
+
 typedef struct __attribute__((__packed__)) data_block {
     uint32_t index;
     uint8_t data[BLOCK_DATA_SIZE];
@@ -29,6 +31,18 @@ void fs_init() {
         curr_node->next = free_list;
         free_list = curr_node;
     }
+}
+
+int open(const char* file_name) {
+    for (size_t i = 0; i < next_entry; i++) {
+        if (strcmp(file_name, entries[i].name) == 0) {
+            int fd = create_fd(&entries[i]);
+            return fd;
+        }
+    }
+
+    // file not found
+    return -1;
 }
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
@@ -170,14 +184,14 @@ void delete (const char* file_name) {
 }
 
 int rename(const char* oldpath, const char* newpath) {
-	int r = 1;
+    int r = 1;
 
-	for(int i = 0; i < next_entry; i++) {
-		if (strcmp(oldpath, entries[i].name) == 0) {
-			strcpy(entries[i].name, newpath);
-			r = 0;
-		}
-	}
+    for (int i = 0; i < next_entry; i++) {
+        if (strcmp(oldpath, entries[i].name) == 0) {
+            strcpy(entries[i].name, newpath);
+            r = 0;
+        }
+    }
 
-	return r;
+    return r;
 }
