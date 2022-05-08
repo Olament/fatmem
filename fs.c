@@ -48,7 +48,6 @@ int open(const char* file_name) {
     }
     
     // file not found, create a new file instead
-
     // sanity check
     if (next_entry >= MAX_FILE_SIZE) {
         return -1;
@@ -69,6 +68,8 @@ int open(const char* file_name) {
 
     return fd;
 }
+
+size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
@@ -143,7 +144,6 @@ void write_at(int fd, size_t index, uint8_t buff, size_t size) {
 
 bool append(int fd, uint8_t* buf, size_t size) {
     file_entry_t* entry = find_fd(fd);
-    
     write_at(fd, entry->file_size, buf, size);
 }
 
