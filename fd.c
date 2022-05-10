@@ -26,6 +26,8 @@ int create_fd(file_entry_t* file_entry) {
     new_node->next = fd_list;
 
     fd_list = new_node;
+
+    return fd;
 }
 
 file_entry_t* find_fd(int fd) {
