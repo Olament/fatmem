@@ -1,4 +1,5 @@
 *.o
 main
 .vscode/
+.idea/
 build/
