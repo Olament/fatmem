@@ -26,7 +26,7 @@ int fs_open(const char* file_name);
 
 bool fs_write(int fd, uint8_t* buf, size_t size);
 
-void fs_write_at(int fd, size_t index, uint8_t buff, size_t size);
+bool fs_write_at(int fd, size_t index, uint8_t* buff, size_t size);
 
 bool fs_append(int fd, uint8_t* buf, size_t size);
 

@@ -58,7 +58,7 @@ int fs_open(const char *file_name) {
     strcpy(entries[next_entry].name, file_name);
     entries[next_entry].file_size = 0;
     entries[next_entry].start_index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
-    data_block_t *new_block = free_list;
+    data_block_t *new_block = (data_block_t *)free_list;
     new_block->index = -1;
     free_list = free_list->next;
 
@@ -70,13 +70,16 @@ int fs_open(const char *file_name) {
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
-bool fs_write(int fd, uint8_t *buf, size_t size) { fs_write_at(fd, 0, buf, size); }
+bool fs_write(int fd, uint8_t *buf, size_t size) { return fs_write_at(fd, 0, buf, size); }
 
-void fs_write_at(int fd, size_t index, uint8_t buff, size_t size) {
+bool fs_write_at(int fd, size_t index, uint8_t *buff, size_t size) {
     file_entry_t *entry = find_fd(fd);
     size_t fsize = entry->file_size;
 
-    if (index > fsize) return;
+    if (index > fsize) {
+        // writing outside the bound
+        return false;
+    }
 
     int num_blocks = (fsize + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
     int blocks_needed = (index + size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
@@ -92,11 +95,10 @@ void fs_write_at(int fd, size_t index, uint8_t buff, size_t size) {
         int num_new_block = blocks_needed - num_blocks;
         for (size_t i = 0; i < num_new_block; i++) {
             if (free_list == NULL) {
-                // TODO: do something
-                return;
+                return false;
             }
 
-            data_block_t *new_block = free_list;
+            data_block_t *new_block = (data_block_t *)free_list;
             free_list = free_list->next;
 
             curr_block->index = ((uintptr_t)new_block - (uintptr_t)blocks) / BLOCK_SIZE;
@@ -130,11 +132,13 @@ void fs_write_at(int fd, size_t index, uint8_t buff, size_t size) {
         memcpy((curr_block->data) + write_point++, buff++, 1);
         size--;
     }
+
+    return true;
 }
 
 bool fs_append(int fd, uint8_t *buf, size_t size) {
     file_entry_t *entry = find_fd(fd);
-    fs_write_at(fd, entry->file_size, buf, size);
+    return fs_write_at(fd, entry->file_size, buf, size);
 }
 
 void fs_read(int fd) {
