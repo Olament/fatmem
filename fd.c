@@ -1,5 +1,7 @@
 #include "fd.h"
 
+#include <stdlib.h>
+
 #include "fs.h"
 
 typedef struct fd_node {
