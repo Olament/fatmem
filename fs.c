@@ -70,8 +70,6 @@ int open(const char *file_name) {
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
-size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
-
 bool write(int fd, uint8_t *buf, size_t size) { write_at(fd, 0, buf, size); }
 
 void write_at(int fd, size_t index, uint8_t buff, size_t size) {
