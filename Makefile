@@ -1,17 +1,24 @@
 CC := clang
-CFLAGS := -I.
-DEPS := fs.h fd.h posix.h
-OBJ := fs.o fd.o posix.o main.o
+SRC := src
+BUILD := build
+TARGET := main
+
+SOURCES := $(shell find $(SRC) -type f -name *.c)
+OBJECTS := $(patsubst $(SRC)/%,$(BUILD)/%,$(SOURCES:.c=.o))
+CFLAGS := -g -Wall -Wno-unused-function
+LIB := 
+INC := -I include
 
 all: main
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+main: $(OBJECTS)
+	$(CC) $(BUILD)/fd.o $(BUILD)/fs.o $(BUILD)/main.o $(BUILD)/posix.o -o main $(LIB)
 
-main: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+$(BUILD)/%.o: $(SRC)/%.c
+	@mkdir -p $(BUILD)
+	@echo "$(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
-	rm -f $(OBJ) main
+	@echo "$(RM) -r $(BUILD) $(TARGET)"; $(RM) -r $(BUILD) $(TARGET)
 
 .PHONY: all clean
