@@ -33,7 +33,7 @@ void fs_init() {
     }
 }
 
-int open(const char *file_name) {
+int fs_open(const char *file_name) {
     if (next_entry >= MAX_FILE_SIZE) {
         return false;
     }
@@ -70,9 +70,9 @@ int open(const char *file_name) {
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
-bool write(int fd, uint8_t *buf, size_t size) { write_at(fd, 0, buf, size); }
+bool fs_write(int fd, uint8_t *buf, size_t size) { fs_write_at(fd, 0, buf, size); }
 
-void write_at(int fd, size_t index, uint8_t buff, size_t size) {
+void fs_write_at(int fd, size_t index, uint8_t buff, size_t size) {
     file_entry_t *entry = find_fd(fd);
     size_t fsize = entry->file_size;
 
@@ -132,12 +132,12 @@ void write_at(int fd, size_t index, uint8_t buff, size_t size) {
     }
 }
 
-bool append(int fd, uint8_t *buf, size_t size) {
+bool fs_append(int fd, uint8_t *buf, size_t size) {
     file_entry_t *entry = find_fd(fd);
-    write_at(fd, entry->file_size, buf, size);
+    fs_write_at(fd, entry->file_size, buf, size);
 }
 
-void read(int fd) {
+void fs_read(int fd) {
     file_entry_t *entry = find_fd(fd);
     size_t total_size = entry->file_size;
     data_block_t *curr_block = &blocks[entry->start_index];
@@ -156,7 +156,7 @@ void read(int fd) {
     }
 }
 
-void delete (int fd) {
+void fs_delete(int fd) {
     file_entry_t *entry = find_fd(fd);
 
     // first block
@@ -175,7 +175,7 @@ void delete (int fd) {
     memset(&entry->file_size, 0, sizeof(size_t));
 }
 
-bool rename(const char *oldpath, const char *newpath) {
+bool fs_rename(const char *oldpath, const char *newpath) {
     for (int i = 0; i < next_entry; i++) {
         if (strcmp(oldpath, entries[i].name) == 0) {
             strcpy(entries[i].name, newpath);
