@@ -35,7 +35,7 @@ void fs_init() {
 
 int fs_open(const char *file_name) {
     if (next_entry >= MAX_FILE_SIZE) {
-        return false;
+        return -1;
     }
 
     // Find file and set fd
@@ -51,7 +51,7 @@ int fs_open(const char *file_name) {
     if (next_entry >= MAX_FILE_SIZE) {
         return -1;
     }
-    if (free_list != NULL) {
+    if (free_list == NULL) {
         return -1;
     }
     // setting up an empty file entry
