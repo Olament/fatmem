@@ -70,6 +70,8 @@ int fs_open(const char *file_name) {
 
 size_t min(size_t num1, size_t num2) { return num1 > num2 ? num2 : num1; }
 
+size_t max(size_t num1, size_t num2) { return num1 > num2 ? num1 : num2; }
+
 bool fs_write(int fd, uint8_t *buf, size_t size) { return fs_write_at(fd, 0, buf, size); }
 
 bool fs_write_at(int fd, size_t index, uint8_t *buff, size_t size) {
@@ -81,7 +83,7 @@ bool fs_write_at(int fd, size_t index, uint8_t *buff, size_t size) {
         return false;
     }
 
-    int num_blocks = (fsize + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
+    int num_blocks = max(1, (fsize + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE);
     int blocks_needed = (index + size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
 
     if (blocks_needed > num_blocks) {  // need allocate new block
