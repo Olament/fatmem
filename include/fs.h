@@ -9,6 +9,7 @@
 #define BLOCK_DATA_SIZE 124
 #define BLOCK_SIZE (BLOCK_INDEX_SIZE + BLOCK_DATA_SIZE)
 #define MAX_BLOCK_SIZE 1024
+#define BLOCK_INDEX_END UINT32_MAX
 
 // file entry
 #define MAX_FILENAME 32
@@ -22,14 +23,16 @@ typedef struct file_entry {
 
 void fs_init();
 
-int open(const char* file_name);
+int fs_open(const char* file_name);
 
-bool write(int fd, uint8_t* buf, size_t size);
+bool fs_write(int fd, uint8_t* buf, size_t size);
 
-bool append(int fd, uint8_t* buf, size_t size);
+bool fs_write_at(int fd, size_t index, uint8_t* buff, size_t size);
 
-void read(int fd);
+bool fs_append(int fd, uint8_t* buf, size_t size);
 
-void delete (int fd);
+void fs_read(int fd);
 
-bool rename(const char* oldpath, const char* newpath);
+void fs_delete(int fd);
+
+bool fs_rename(const char* oldpath, const char* newpath);
