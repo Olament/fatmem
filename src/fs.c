@@ -60,7 +60,7 @@ int fs_open(const char *file_name) {
     entries[next_entry].start_index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
     data_block_t *new_block = (data_block_t *)free_list;
     free_list = free_list->next;
-    new_block->index = -1;
+    new_block->index = BLOCK_INDEX_END;
 
     int fd = create_fd(&entries[next_entry]);
     next_entry += 1;
@@ -89,7 +89,7 @@ bool fs_write_at(int fd, size_t index, uint8_t *buff, size_t size) {
     if (blocks_needed > num_blocks) {  // need allocate new block
         // go to the end of data block of file
         data_block_t *curr_block = &blocks[entry->start_index];
-        while (curr_block->index != -1) {
+        while (curr_block->index != BLOCK_INDEX_END) {
             curr_block = &blocks[curr_block->index];
         }
 
@@ -108,7 +108,7 @@ bool fs_write_at(int fd, size_t index, uint8_t *buff, size_t size) {
 
             // set index to last block
             if (i == (num_new_block - 1)) {
-                curr_block->index = -1;
+                curr_block->index = BLOCK_INDEX_END;
             }
         }
     }
@@ -155,7 +155,7 @@ void fs_read(int fd) {
         total_size -= BLOCK_DATA_SIZE;
 
         // move to next block
-        if (curr_block->index == -1) {  // EOF
+        if (curr_block->index == BLOCK_INDEX_END) {  // EOF
             break;
         }
         curr_block = &blocks[curr_block->index];
@@ -168,7 +168,7 @@ void fs_delete(int fd) {
     // first block
     data_block_t *curr_block = &blocks[entry->start_index];
     node_t *curr_node;
-    while (curr_block->index != -1) {  // EOF
+    while (curr_block->index != BLOCK_INDEX_END) {  // EOF
         // cast to node
         node_t *curr_node = (node_t *)curr_block;
         curr_node->next = free_list;
