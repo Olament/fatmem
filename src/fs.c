@@ -59,8 +59,8 @@ int fs_open(const char *file_name) {
     entries[next_entry].file_size = 0;
     entries[next_entry].start_index = ((uintptr_t)free_list - (uintptr_t)blocks) / BLOCK_SIZE;
     data_block_t *new_block = (data_block_t *)free_list;
-    new_block->index = -1;
     free_list = free_list->next;
+    new_block->index = -1;
 
     int fd = create_fd(&entries[next_entry]);
     next_entry += 1;
